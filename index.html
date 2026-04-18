@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Crillinox' English Dictionary</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Lora:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="en_style.css" />
+</head>
+<body>
+  <div class="container">
+
+    <nav class="dict-nav">
+      <span class="dict-nav-label">Dictionaries:</span>
+      <a href="index.html" class="dict-nav-link active">🇺🇸 English</a>
+      <a href="jp_index.html"    class="dict-nav-link">🇯🇵 Japanese</a>
+      <a href="es_index.html" class="dict-nav-link">🇪🇸 Spanish</a>
+      <a href="zh_index.html" class="dict-nav-link">🇨🇳 Chinese</a>
+    </nav>
+
+    <header>
+      <h1>
+        <span class="main-title">Crillinox'</span>
+        <span class="sub-title">English Dictionary</span>
+      </h1>
+      <div class="mode-toggle">
+        <button id="lightBtn" aria-label="Light mode">☀</button>
+        <button id="darkBtn" aria-label="Dark mode">☽</button>
+      </div>
+    </header>
+
+    <div class="search-wrapper">
+      <input type="text" id="searchInput" placeholder="word or definition…" autofocus autocomplete="off" />
+      <div class="search-hint">↑↓ navigate &nbsp;·&nbsp; Enter select &nbsp;·&nbsp; Esc dismiss</div>
+    </div>
+
+    <div class="pos-filter" id="posFilter">
+      <span class="filter-label">Filter:</span>
+      <button class="pos-btn active" data-pos="all">All</button>
+      <button class="pos-btn" data-pos="noun">Noun</button>
+      <button class="pos-btn" data-pos="verb">Verb</button>
+      <button class="pos-btn" data-pos="adjective">Adjective</button>
+      <button class="pos-btn" data-pos="adverb">Adverb</button>
+      <button class="pos-btn" data-pos="preposition">Preposition</button>
+      <button class="pos-btn" data-pos="other">Other</button>
+    </div>
+
+    <div id="results" class="results" role="listbox" aria-label="Search results"></div>
+
+    <div id="output" class="output">
+      <div class="output-placeholder">Enter a word to search…</div>
+    </div>
+  </div>
+  <script src="en_script.js"></script>
+</body>
+</html>
