@@ -2,6 +2,8 @@
 
 A fast, lightweight, browser-based dictionary supporting multiple languages with smart search and clean UI.
 
+if you are interested in trying it out without downloading go here: https://crillinox.github.io/multilingual-dictionary-website/
+this is intended to be an offline library usable anytime
 ---
 
 ## Features
