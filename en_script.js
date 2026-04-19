@@ -1,3 +1,8 @@
+/* ============================================================
+   CRILLINOX ENGLISH DICTIONARY — en_script.js
+   format for words is name|definition|partOfSpeech|JA|ES|ZH
+   ============================================================ */
+
 // ── Dark/Light mode ─────────────────────────────────────────
 const modeToggle = document.getElementById('modeToggle');
 const savedMode  = localStorage.getItem('mode') || 'light';
