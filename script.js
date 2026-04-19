@@ -1,3 +1,8 @@
+/* ============================================================
+   CRILLINOX JAPANESE DICTIONARY — script.js
+   format for words is name|definition|partOfSpeech|EN|ES|ZH
+   ============================================================ */
+
 // ── Dark/Light mode ─────────────────────────────────────────
 const modeToggle = document.getElementById('modeToggle');
 const savedMode  = localStorage.getItem('mode') || 'light';
