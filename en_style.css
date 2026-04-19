@@ -90,37 +90,15 @@ h1 {
 
 /* ── Mode toggle ─────────────────────────── */
 .mode-toggle {
-  display: flex;
-  gap: 6px;
-  flex-shrink: 0;
-  margin-top: 4px;
-}
-
-.mode-toggle button {
-  width: 36px;
-  height: 36px;
-  border: 1.5px solid var(--border);
-  border-radius: 50%;
-  background: var(--surface);
-  color: var(--muted);
-  font-size: 16px;
-  cursor: pointer;
+  width: 36px; height: 36px;
+  border: 1.5px solid var(--border); border-radius: 50%;
+  background: var(--surface); color: var(--muted);
+  font-size: 16px; cursor: pointer; flex-shrink: 0;
   transition: all var(--transition);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: flex; align-items: center; justify-content: center;
+  margin-top: 2px;
 }
-
-.mode-toggle button:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-.mode-toggle button.active {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
-}
+.mode-toggle:hover { border-color: var(--accent); color: var(--accent); }
 
 /* ── Search ──────────────────────────────── */
 .search-wrapper {
