@@ -1,3 +1,8 @@
+/* ============================================================
+   CRILLINOX SPANISH DICTIONARY — es_script.js
+   format for words is name|definition|partOfSpeech|EN|JA|ZH
+   ============================================================ */
+
 // ── Dark/Light mode ─────────────────────────────────────────
 const modeToggle = document.getElementById('modeToggle');
 const savedMode  = localStorage.getItem('es-mode') || 'light';
