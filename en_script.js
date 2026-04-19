@@ -1,35 +1,38 @@
+// ============================================================
+// CRILLINOX ENGLISH DICTIONARY — en_script.js
+// Features:
+//   ✅ Search priority: exact → starts with → contains → definition
+//   ✅ Search by definition (loose match, e.g. "cloud" → aws)
+//   ✅ Click result → auto-searches immediately
+//   ✅ Part-of-Speech filtering
+//   ✅ Full keyboard navigation (↑ ↓ Enter Esc)
+// ============================================================
+
 // ── Dark/Light mode ─────────────────────────────────────────
-const lightBtn = document.getElementById('lightBtn');
-const darkBtn  = document.getElementById('darkBtn');
-const savedMode = localStorage.getItem('mode') || 'light';
+const modeToggle = document.getElementById('modeToggle');
+const savedMode  = localStorage.getItem('mode') || 'light';
 
 if (savedMode === 'dark') {
   document.body.classList.add('dark-mode');
-  darkBtn.classList.add('active');
-} else {
-  lightBtn.classList.add('active');
+  modeToggle.textContent = '☽';
 }
 
-lightBtn.addEventListener('click', () => {
-  document.body.classList.remove('dark-mode');
-  lightBtn.classList.add('active');
-  darkBtn.classList.remove('active');
-  localStorage.setItem('mode', 'light');
+modeToggle.addEventListener('click', () => {
+  const isDark = document.body.classList.toggle('dark-mode');
+  modeToggle.textContent = isDark ? '☽' : '☀';
+  localStorage.setItem('mode', isDark ? 'dark' : 'light');
 });
 
-darkBtn.addEventListener('click', () => {
-  document.body.classList.add('dark-mode');
-  darkBtn.classList.add('active');
-  lightBtn.classList.remove('active');
-  localStorage.setItem('mode', 'dark');
-});
 
 // ── Word class ───────────────────────────────────────────────
 class Word {
-  constructor(name, definition, partOfSpeech) {
+  constructor(name, definition, partOfSpeech, transJA, transES, transZH) {
     this.name         = name;
     this.definition   = definition;
     this.partOfSpeech = partOfSpeech;
+    this.transJA = transJA || '';
+    this.transES = transES || '';
+    this.transZH = transZH || '';
   }
 
   // Broad POS category for filtering
@@ -1069,7 +1072,9 @@ yet|up to the present time / still|adverb
 you|used to refer to the person or people addressed / oneself|pronoun
 young|not old / youthful|adjective
 your|belonging to you / yours|pronoun
-yourself|used as the object of a verb or preposition to refer to you|pronoun`;
+yourself|used as the object of a verb or preposition to refer to you|pronoun
+water|a colorless, transparent, odorless liquid / to irrigate|noun/verb|水 (みず)|el agua|水
+`;
 
 
 // ── Build word list ──────────────────────────────────────────
@@ -1079,8 +1084,11 @@ function setupDict() {
   const lines = wordsText.trim().split('\n');
   lines.forEach(line => {
     const parts = line.split('|');
-    if (parts.length === 3) {
-      allWords.push(new Word(parts[0].trim(), parts[1].trim(), parts[2].trim()));
+    if (parts.length >= 3) {
+      allWords.push(new Word(
+        parts[0].trim(), parts[1].trim(), parts[2].trim(),
+        (parts[3] || '').trim(), (parts[4] || '').trim(), (parts[5] || '').trim()
+      ));
     }
   });
   console.log(`✅ Dictionary loaded: ${allWords.length} words`);
@@ -1212,14 +1220,6 @@ function formatDefinition(raw) {
   return `<ul class="def-list">${items}</ul>`;
 }
 
-async function translateText(text, from, to) {
-  const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${from}|${to}`;
-  const res  = await fetch(url);
-  if (!res.ok) throw new Error('API error');
-  const data = await res.json();
-  if (data.responseStatus !== 200 && data.responseStatus !== 206) throw new Error(data.responseDetails);
-  return data.responseData.translatedText;
-}
 
 // ── Full entry display ───────────────────────────────────────
 function displayWord(word) {
@@ -1239,40 +1239,50 @@ function displayWord(word) {
       </div>
       <div class="entry-body">
         <div class="entry-row">
-          <span class="entry-field-label">Definition</span>
-          <div class="entry-definition">${defHTML}</div>
+          <span class="entry-field-label" id="defLabel">Definition</span>
+          <div class="entry-definition" id="defContent">${defHTML}</div>
         </div>
         <div class="translate-strip">
-          <button class="translate-btn" id="translateBtn-ja">🇯🇵 → Japanese</button>
-          <button class="translate-btn" id="translateBtn-zh">🇨🇳 → Chinese</button>
-          <span class="translate-result" id="translateResult"></span>
+          <span class="translate-label">Translate:</span>
+          <button class="translate-btn" id="translateBtn-es">🇪🇸 ES</button>
+          <button class="translate-btn" id="translateBtn-ja">🇯🇵 JA</button>
+          <button class="translate-btn" id="translateBtn-zh">🇨🇳 ZH</button>
+          <button class="translate-btn translate-btn-reset" id="translateBtn-reset" style="display:none">↩ Original</button>
         </div>
       </div>
     </div>
   `;
 
-  function wireBtn(btnId, from, to, label) {
-    const btn    = document.getElementById(btnId);
-    const result = document.getElementById('translateResult');
+  const originalDef = word.definition;
+
+  function wireBtn(btnId, trans, langLabel) {
+    const btn = document.getElementById(btnId);
     if (!btn) return;
-    btn.addEventListener('click', async () => {
-      document.querySelectorAll('.translate-btn').forEach(b => b.disabled = true);
-      result.className = 'translate-result loading';
-      result.textContent = `Translating to ${label}…`;
-      try {
-        const translated = await translateText(word.definition, from, to);
-        result.className = 'translate-result';
-        result.textContent = translated;
-      } catch {
-        result.className = 'translate-result';
-        result.textContent = '⚠ Translation unavailable';
-      }
-      document.querySelectorAll('.translate-btn').forEach(b => b.disabled = false);
+    if (!trans) { btn.disabled = true; btn.title = 'No translation provided'; return; }
+    btn.addEventListener('click', () => {
+      const defContent = document.getElementById('defContent');
+      const defLabel   = document.getElementById('defLabel');
+      defContent.innerHTML = formatDefinition(trans);
+      defLabel.textContent = langLabel;
+      document.getElementById('translateBtn-reset').style.display = '';
     });
   }
 
-  wireBtn('translateBtn-ja', 'en', 'ja', 'Japanese');
-  wireBtn('translateBtn-zh', 'en', 'zh-CN', 'Chinese');
+  document.getElementById('translateBtn-reset').addEventListener('click', () => {
+    document.getElementById('defContent').innerHTML = formatDefinition(originalDef);
+    document.getElementById('defLabel').textContent = 'Definition';
+    document.getElementById('translateBtn-reset').style.display = 'none';
+    document.querySelectorAll('.translate-btn').forEach(b => {
+      if (b.id !== 'translateBtn-reset') b.disabled = !b._hasTrans;
+    });
+  });
+
+  wireBtn('translateBtn-es', word.transES, 'ES');
+  wireBtn('translateBtn-ja', word.transJA, 'JA');
+  wireBtn('translateBtn-zh', word.transZH, 'ZH');
+  ['translateBtn-es','translateBtn-ja','translateBtn-zh'].forEach(id => {
+    const b = document.getElementById(id); if (b) b._hasTrans = !b.disabled;
+  });
 }
 
 function searchWord() {
