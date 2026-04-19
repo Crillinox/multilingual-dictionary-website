@@ -1,36 +1,30 @@
 // ── Dark/Light mode ─────────────────────────────────────────
-const lightBtn = document.getElementById('lightBtn');
-const darkBtn  = document.getElementById('darkBtn');
-const savedMode = localStorage.getItem('mode') || 'light';
+const modeToggle = document.getElementById('modeToggle');
+const savedMode  = localStorage.getItem('mode') || 'light';
 
 if (savedMode === 'dark') {
   document.body.classList.add('dark-mode');
-  darkBtn.classList.add('active');
-} else {
-  lightBtn.classList.add('active');
+  modeToggle.textContent = '☽';
 }
 
-lightBtn.addEventListener('click', () => {
-  document.body.classList.remove('dark-mode');
-  lightBtn.classList.add('active');
-  darkBtn.classList.remove('active');
-  localStorage.setItem('mode', 'light');
+modeToggle.addEventListener('click', () => {
+  const isDark = document.body.classList.toggle('dark-mode');
+  modeToggle.textContent = isDark ? '☽' : '☀';
+  localStorage.setItem('mode', isDark ? 'dark' : 'light');
 });
 
-darkBtn.addEventListener('click', () => {
-  document.body.classList.add('dark-mode');
-  darkBtn.classList.add('active');
-  lightBtn.classList.remove('active');
-  localStorage.setItem('mode', 'dark');
-});
 
 // ── Word class ───────────────────────────────────────────────
 class Word {
-  constructor(name, romaji, definition, partOfSpeech) {
+  constructor(name, romaji, definition, partOfSpeech, transEN, transES, transZH) {
     this.name        = name;
     this.romaji      = romaji;           // may contain "/" e.g. "hito/jin/nin"
     this.definition  = definition;
     this.partOfSpeech = partOfSpeech;
+    // Optional manual translations (empty string = not provided)
+    this.transEN = transEN || '';
+    this.transES = transES || '';
+    this.transZH = transZH || '';
   }
 
   // All individual romaji variants as an array
@@ -74,6 +68,7 @@ const wordsText = `
 つ|tsu|general purpose measure|counter
 は|wa|topic marker|particle
 私|watashi|I, myself, me|pronoun
+天気|tenki|weather|noun|weather|el tiempo|天气
 `;
 
 // ── Build word list ──────────────────────────────────────────
@@ -83,8 +78,11 @@ function setupDict() {
   const lines = wordsText.trim().split('\n');
   lines.forEach(line => {
     const parts = line.split('|');
-    if (parts.length === 4) {
-      allWords.push(new Word(parts[0].trim(), parts[1].trim(), parts[2].trim(), parts[3].trim()));
+    if (parts.length >= 4) {
+      allWords.push(new Word(
+        parts[0].trim(), parts[1].trim(), parts[2].trim(), parts[3].trim(),
+        (parts[4] || '').trim(), (parts[5] || '').trim(), (parts[6] || '').trim()
+      ));
     }
   });
   console.log(`✅ Dictionary loaded: ${allWords.length} words`);
@@ -240,14 +238,6 @@ function formatDefinition(raw) {
   return `<ul class="def-list">${items}</ul>`;
 }
 
-async function translateText(text, from, to) {
-  const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${from}|${to}`;
-  const res  = await fetch(url);
-  if (!res.ok) throw new Error('API error');
-  const data = await res.json();
-  if (data.responseStatus !== 200 && data.responseStatus !== 206) throw new Error(data.responseDetails);
-  return data.responseData.translatedText;
-}
 
 // ── Full display (on Enter / click) ─────────────────────────
 function displayWord(word) {
@@ -271,37 +261,54 @@ function displayWord(word) {
       </div>
       <div class="entry-body">
         <div class="entry-row">
-          <span class="entry-field-label">定義</span>
-          <div class="entry-definition">${defHTML}</div>
+          <span class="entry-field-label" id="defLabel">定義</span>
+          <div class="entry-definition" id="defContent">${defHTML}</div>
         </div>
         <div class="entry-row">
           <span class="entry-field-label">品詞</span>
           <div class="entry-tags">${posHTML}</div>
         </div>
         <div class="translate-strip">
-          <button class="translate-btn" id="translateBtn">🌐 Translate definition → Japanese</button>
-          <span class="translate-result" id="translateResult"></span>
+          <span class="translate-label">Translate:</span>
+          <button class="translate-btn" id="translateBtn-en">🇺🇸 EN</button>
+          <button class="translate-btn" id="translateBtn-es">🇪🇸 ES</button>
+          <button class="translate-btn" id="translateBtn-zh">🇨🇳 ZH</button>
+          <button class="translate-btn translate-btn-reset" id="translateBtn-reset" style="display:none">↩ Original</button>
         </div>
       </div>
     </div>
   `;
 
-  // Wire translation button: EN definition → JA
-  const btn    = document.getElementById('translateBtn');
-  const result = document.getElementById('translateResult');
-  btn.addEventListener('click', async () => {
-    btn.disabled = true;
-    result.className = 'translate-result loading';
-    result.textContent = 'Translating…';
-    try {
-      const translated = await translateText(word.definition, 'en', 'ja');
-      result.className = 'translate-result';
-      result.textContent = translated;
-    } catch {
-      result.className = 'translate-result';
-      result.textContent = '⚠ Translation unavailable';
-    }
-    btn.disabled = false;
+  const originalDef = word.definition;
+
+  function wireBtn(btnId, trans, langLabel, resetLabel) {
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
+    if (!trans) { btn.disabled = true; btn.title = 'No translation provided'; return; }
+    btn.addEventListener('click', () => {
+      const defContent = document.getElementById('defContent');
+      const defLabel   = document.getElementById('defLabel');
+      defContent.innerHTML = formatDefinition(trans);
+      defLabel.textContent = langLabel;
+      document.getElementById('translateBtn-reset').style.display = '';
+    });
+  }
+
+  document.getElementById('translateBtn-reset').addEventListener('click', () => {
+    document.getElementById('defContent').innerHTML = formatDefinition(originalDef);
+    document.getElementById('defLabel').textContent = '定義';
+    document.getElementById('translateBtn-reset').style.display = 'none';
+    document.querySelectorAll('.translate-btn').forEach(b => {
+      if (b.id !== 'translateBtn-reset') b.disabled = !b._hasTrans;
+    });
+  });
+
+  wireBtn('translateBtn-en', word.transEN, 'EN');
+  wireBtn('translateBtn-es', word.transES, 'ES');
+  wireBtn('translateBtn-zh', word.transZH, 'ZH');
+  // Store whether each btn has a translation (for reset)
+  ['translateBtn-en','translateBtn-es','translateBtn-zh'].forEach(id => {
+    const b = document.getElementById(id); if (b) b._hasTrans = !b.disabled;
   });
 }
 
