@@ -1,13 +1,3 @@
-// ============================================================
-// CRILLINOX ENGLISH DICTIONARY — en_script.js
-// Features:
-//   ✅ Search priority: exact → starts with → contains → definition
-//   ✅ Search by definition (loose match, e.g. "cloud" → aws)
-//   ✅ Click result → auto-searches immediately
-//   ✅ Part-of-Speech filtering
-//   ✅ Full keyboard navigation (↑ ↓ Enter Esc)
-// ============================================================
-
 // ── Dark/Light mode ─────────────────────────────────────────
 const modeToggle = document.getElementById('modeToggle');
 const savedMode  = localStorage.getItem('mode') || 'light';
