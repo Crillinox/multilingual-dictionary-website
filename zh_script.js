@@ -1,3 +1,8 @@
+/* ============================================================
+   CRILLINOX Chinese DICTIONARY — zh_script.js
+   format for words is name|definition|partOfSpeech|EN|ES|JA
+   ============================================================ */
+
 // ── Dark/Light mode ─────────────────────────────────────────
 const modeToggle = document.getElementById('modeToggle');
 const savedMode  = localStorage.getItem('zh-mode') || 'light';
