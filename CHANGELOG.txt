@@ -16,3 +16,13 @@
 
 * Updated light and dark mode
 * Each dictionary now has its own color theme
+
+
+# Hotfix 1.01 Highlights:
+
+* Improved translation (by hand now)
+* Made light/dark mode a single button instead of 2
+* If no translation exists the button is grayed out
+* Will take some time before the translations are fully implemented
+* No new updates for a little while as I catch up on the thousand something words I needa translate (monolingual dictionaries too)
+* Any help is appreciated
